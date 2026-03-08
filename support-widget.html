@@ -1,220 +1,77 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Support</title>
-    <style>
-        /* Chat widget styles */
-        #support-widget {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 350px;
-            height: 500px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.15);
-            display: flex;
-            flex-direction: column;
-            z-index: 1000;
-            font-family: 'Segoe UI', sans-serif;
-            overflow: hidden;
-        }
-        
-        .chat-header {
-            background: #4361ee;
-            color: white;
-            padding: 18px;
-            font-weight: 600;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .close-btn {
-            cursor: pointer;
-            font-size: 20px;
-        }
-        
-        .chat-body {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .message {
-            max-width: 80%;
-            padding: 12px 15px;
-            margin-bottom: 12px;
-            border-radius: 18px;
-            line-height: 1.4;
-        }
-        
-        .user-message {
-            align-self: flex-end;
-            background: #4361ee;
-            color: white;
-            border-bottom-right-radius: 5px;
-        }
-        
-        .bot-message {
-            align-self: flex-start;
-            background: #f1f2f6;
-            color: #333;
-            border-bottom-left-radius: 5px;
-        }
-        
-        .chat-footer {
-            padding: 15px;
-            border-top: 1px solid #eee;
-            display: flex;
-        }
-        
-        #user-input {
-            flex: 1;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 24px;
-            outline: none;
-        }
-        
-        #send-btn {
-            background: #4361ee;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            margin-left: 10px;
-            cursor: pointer;
-        }
-        
-        .typing-indicator {
-            display: none;
-            padding: 10px;
-            font-style: italic;
-            color: #888;
-        }
-    </style>
-</head>
-<body>
-    <!-- Support Widget -->
-    <div id="support-widget">
-        <div class="chat-header">
-            <span>Customer Support</span>
-            <span class="close-btn">×</span>
-        </div>
-        <div class="chat-body" id="chat-body">
-            <div class="message bot-message">
-                Hello! I'm your support assistant. How can I help you today?
-            </div>
-            <div class="typing-indicator" id="typing-indicator">Assistant is typing...</div>
-        </div>
-        <div class="chat-footer">
-            <input type="text" id="user-input" placeholder="Type your question...">
-            <button id="send-btn">➤</button>
-        </div>
-    </div>
+<meta charset="UTF-8">
+<title>Scanner numere IF</title>
 
-    <script>
-        // Configuration
-        const DEEPSEEK_API_KEY = "YOUR_API_KEY_HERE";
-        const API_URL = "https://api.deepseek.com/v1/chat/completions";
-        const MODEL = "deepseek-chat";
-        
-        // DOM Elements
-        const chatBody = document.getElementById('chat-body');
-        const userInput = document.getElementById('user-input');
-        const sendBtn = document.getElementById('send-btn');
-        const closeBtn = document.querySelector('.close-btn');
-        const typingIndicator = document.getElementById('typing-indicator');
-        const widget = document.getElementById('support-widget');
-        
-        // Message history
-        let messageHistory = [
-            {
-                role: "system",
-                content: "You are a professional customer support agent for a website. \
-                Respond helpfully to user questions. Keep responses concise (2-3 sentences max). \
-                If you don't know an answer, suggest contacting support@company.com."
-            }
-        ];
-        
-        // Add message to chat
-        function addMessage(content, role) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${role}-message`;
-            messageDiv.textContent = content;
-            chatBody.insertBefore(messageDiv, typingIndicator);
-            chatBody.scrollTop = chatBody.scrollHeight;
-        }
-        
-        // Get AI response
-        async function getAIResponse(userMessage) {
-            typingIndicator.style.display = 'block';
-            chatBody.scrollTop = chatBody.scrollHeight;
-            
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
-                    },
-                    body: JSON.stringify({
-                        model: MODEL,
-                        messages: [
-                            ...messageHistory,
-                            { role: "user", content: userMessage }
-                        ],
-                        temperature: 0.7,
-                        max_tokens: 150
-                    })
-                });
-                
-                const data = await response.json();
-                const aiResponse = data.choices[0].message.content;
-                
-                // Update message history
-                messageHistory.push(
-                    { role: "user", content: userMessage },
-                    { role: "assistant", content: aiResponse }
-                );
-                
-                return aiResponse;
-                
-            } catch (error) {
-                console.error("API Error:", error);
-                return "Sorry, I'm having trouble connecting. Please try again later or email support@company.com";
-            } finally {
-                typingIndicator.style.display = 'none';
-            }
-        }
-        
-        // Handle user message
-        async function handleUserMessage() {
-            const message = userInput.value.trim();
-            if (!message) return;
-            
-            userInput.value = '';
-            addMessage(message, 'user');
-            
-            const aiResponse = await getAIResponse(message);
-            addMessage(aiResponse, 'bot');
-        }
-        
-        // Event Listeners
-        sendBtn.addEventListener('click', handleUserMessage);
-        userInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleUserMessage();
-        });
-        
-        closeBtn.addEventListener('click', () => {
-            widget.style.display = 'none';
-        });
-    </script>
+<style>
+body{
+font-family:Arial;
+text-align:center;
+background:#f2f2f2;
+margin-top:80px;
+}
+
+input{
+padding:10px;
+font-size:20px;
+text-transform:uppercase;
+}
+
+button{
+padding:10px 20px;
+font-size:20px;
+}
+
+#rez{
+margin-top:30px;
+}
+
+.item{
+margin:5px;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>Căutare numere IF</h1>
+
+<input id="litere" maxlength="3" placeholder="ABC">
+
+<button onclick="gen()">Generează</button>
+
+<div id="rez"></div>
+
+<script>
+
+function gen(){
+
+let lit=document.getElementById("litere").value.toUpperCase()
+
+let rez=document.getElementById("rez")
+
+rez.innerHTML=""
+
+for(let i=1;i<=999;i++){
+
+let nr="IF "+String(i).padStart(2,"0")+" "+lit
+
+let link="https://dgpci.mai.gov.ro/drpciv-number-check"
+
+let div=document.createElement("div")
+div.className="item"
+
+div.innerHTML=nr+" <a href='"+link+"' target='_blank'>Verifică oficial</a>"
+
+rez.appendChild(div)
+
+}
+
+}
+
+</script>
+
 </body>
 </html>
